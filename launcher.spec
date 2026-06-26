@@ -60,6 +60,6 @@ exe = EXE(
     strip=False,
     upx=False,
     runtime_tmpdir=None,
-    console=True,          # 1a compilacao: True. Depois troque para False.
+    console=False,          # 1a compilacao: True. Depois troque para False.
     icon=None,             # coloque "leitor.ico" se tiver um icone
 )
