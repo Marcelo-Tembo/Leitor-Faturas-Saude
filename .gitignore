@@ -1,0 +1,18 @@
+# Build / distribuicao
+dist/
+build/
+*.spec.bak
+
+# Python
+__pycache__/
+*.pyc
+
+# Segredos / locais (caso venham a existir)
+segredos.json
+
+# Saidas geradas pelo app em teste
+*.xlsx
+Relatorios/
+
+# OCR embutido (opcional, pesado — nao versionar)
+tessbin/
