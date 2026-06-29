@@ -67,6 +67,11 @@ try:
 except Exception:
     OCR_LOCAL_DISPONIVEL = False
 
+# Pasta tessdata embutida (definida pelo launcher via LEITOR_TESSDATA). Quando
+# o Tesseract vem embutido no .exe, precisamos dizer onde estao os idiomas.
+_tessdata_dir = os.environ.get("LEITOR_TESSDATA", "")
+TESS_CONFIG = f'--tessdata-dir "{_tessdata_dir}"' if _tessdata_dir and os.path.isdir(_tessdata_dir) else ""
+
 
 class GenderLogic:
     def __init__(self):
@@ -92,7 +97,7 @@ class GenderLogic:
             'LUIZ', 'JEAN', 'ADAN', 'CLEBER', 'ALEXCIO', 'ALMIR', 'WANDERSON',
             'WELLINGTON', 'ENDRICK', 'MAXSUEL', 'MAXUEL', 'THIAGO', 'RUBENS',
             'JHON', 'HEUBER', 'WALLEF', 'GABRYEL', 'YURI', 'KAUA', 'JOSHUA', 'NOA', 'WILLIAN', 'ODIRLEY', 'DAVI', 'ADONIAS', 'VANIM',
-            'ELDES', 'MAGNEI', 'VANDERLEY', 'HEBERT', "WENIS"
+            'ELDES', 'MAGNEI', 'VANDERLEY', 'HEBERT'
         ]
 
         fem = [
@@ -101,7 +106,7 @@ class GenderLogic:
             'THAYNARA', 'CATIA', 'ZILMA', 'ALICE', 'SARA', 'LUCIANA', 'SAMARA',
             'THALITA', 'FRANCIELE', 'GRACIELE', 'MICHELE', 'MIRELLA', 'MAYRA',
             'LAIS', 'IRIS', 'THAIS', 'AGNES', 'JUCIRLEY', 'JULIETE', 'ANNE', 'ANNELIZE', 'EMANUELI',
-            'THAYS', 'LARAH', 'KEVELLYN', 'TAMYRIS', "JOYCE", "SARAH"
+            'THAYS', 'LARAH', 'KEVELLYN', 'TAMYRIS'
         ]
 
         if nome in masc: return 'M'
@@ -130,7 +135,7 @@ def ocr_local_por_pagina(caminho_pdf_ou_doc, dpi_escala=3):
     textos = []
     for page in doc:
         QApplication.processEvents()
-        textos.append(pytesseract.image_to_string(_imagem_pagina(page, dpi_escala), lang="por"))
+        textos.append(pytesseract.image_to_string(_imagem_pagina(page, dpi_escala), lang="por", config=TESS_CONFIG))
     return textos
 
 
@@ -167,6 +172,7 @@ def nomes_por_carteirinha(page, escala=5):
     Retorna um dict {carteirinha: nome}.
     """
     data = pytesseract.image_to_data(_imagem_pagina(page, escala), lang="por",
+                                     config=TESS_CONFIG,
                                      output_type=pytesseract.Output.DICT)
     linhas = {}
     for i in range(len(data["text"])):
@@ -830,8 +836,30 @@ class LeitorFaturasApp(QMainWindow):
 
 def run():
     """Ponto de entrada chamado pelo launcher (e tambem ao rodar direto)."""
+    # No Windows, sem isto o app fica agrupado sob o "Python" e a barra de
+    # tarefas nao mostra o icone customizado. Define uma identidade propria.
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Tembo.LeitorFaturas")
+    except Exception:
+        pass
+
     app = QApplication.instance() or QApplication(sys.argv)
+    # Icone da janela (definido pelo launcher via LEITOR_ICONE, se embutido)
+    _icone = os.environ.get("LEITOR_ICONE")
+    if _icone and os.path.exists(_icone):
+        try:
+            from PySide6.QtGui import QIcon
+            app.setWindowIcon(QIcon(_icone))
+        except Exception:
+            pass
     window = LeitorFaturasApp()
+    if _icone and os.path.exists(_icone):
+        try:
+            from PySide6.QtGui import QIcon
+            window.setWindowIcon(QIcon(_icone))
+        except Exception:
+            pass
     window.show()
     # Nao usar sys.exit() aqui: quem controla o processo e o launcher.
     app.exec()

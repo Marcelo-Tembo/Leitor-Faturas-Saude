@@ -23,7 +23,9 @@ import urllib.request
 # sejam embutidas no .exe. Este bloco nunca executa (if False), mas o
 # PyInstaller analisa as imports mesmo assim. NAO REMOVA.
 if False:  # noqa
-    import PySide6           # noqa  GUI
+    import PySide6.QtCore     # noqa  (usamos so QtCore, QtGui e QtWidgets)
+    import PySide6.QtGui      # noqa
+    import PySide6.QtWidgets  # noqa
     import fitz              # noqa  PyMuPDF (leitura de PDF)
     import pandas            # noqa
     import openpyxl          # noqa  necessario para pandas.to_excel
@@ -72,6 +74,17 @@ def configurar_tesseract_embutido():
             os.environ["LEITOR_TESSDATA"] = tessdata
             os.environ["TESSDATA_PREFIX"] = tessdata
         log("Tesseract embutido detectado.")
+
+
+def configurar_icone():
+    """Se houver um .ico embutido, avisa o app (para o icone da janela)."""
+    try:
+        for nome in os.listdir(BUNDLE_DIR):
+            if nome.lower().endswith(".ico"):
+                os.environ["LEITOR_ICONE"] = os.path.join(BUNDLE_DIR, nome)
+                return
+    except Exception:
+        pass
 
 
 def log(msg):
@@ -206,6 +219,7 @@ def rollback_e_rodar():
 
 def main():
     os.makedirs(APP_DIR, exist_ok=True)
+    configurar_icone()
     configurar_tesseract_embutido()
     garantir_codigo_inicial()
     aplicar_update()

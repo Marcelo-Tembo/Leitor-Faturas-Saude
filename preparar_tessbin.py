@@ -16,7 +16,9 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 DESTINO = os.path.join(AQUI, "tessbin")
 
 # Idiomas a manter (o resto do tessdata e descartado para economizar espaco).
-IDIOMAS = {"por.traineddata", "eng.traineddata", "osd.traineddata"}
+# O app so usa portugues, entao por padrao embutimos apenas o 'por'. Se algum
+# dia precisar de ingles, adicione "eng.traineddata" ao conjunto.
+IDIOMAS = {"por.traineddata"}
 
 CANDIDATOS = [
     r"C:\Program Files\Tesseract-OCR",
